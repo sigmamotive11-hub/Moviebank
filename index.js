@@ -15,6 +15,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// ── IN-MEMORY CACHE ──
+let cache = { videos: null, timestamp: 0 };
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 // ── ROUTES ──
 
 // Health check
@@ -24,6 +28,14 @@ app.get('/api/health', (req, res) => {
 
 // Fetch all videos from Cloudinary
 app.get('/api/videos', async (req, res) => {
+  const now = Date.now();
+
+  // Return cached data if still fresh
+  if (cache.videos && (now - cache.timestamp) < CACHE_TTL) {
+    res.set('Cache-Control', 'public, max-age=300');
+    return res.json({ videos: cache.videos, total: cache.videos.length, cached: true });
+  }
+
   try {
     const result = await cloudinary.api.resources({
       resource_type: 'video',
@@ -53,6 +65,11 @@ app.get('/api/videos', async (req, res) => {
     // Sort newest first
     videos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+    // Store in cache
+    cache.videos = videos;
+    cache.timestamp = now;
+
+    res.set('Cache-Control', 'public, max-age=300');
     res.json({ videos, total: videos.length });
   } catch (err) {
     console.error('Cloudinary error:', err);
