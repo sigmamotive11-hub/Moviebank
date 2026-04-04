@@ -1,2 +1,6 @@
-// This file is required by Vercel
-module.exports = {};
+const express = require('express');
+const app = express();
+
+app.use(express.static('.'));
+
+module.exports = app;
