@@ -1,5 +1,7 @@
 {
-  "rewrites": [
-    { "source": "/api/videos", "destination": "/api/videos.js" }
-  ]
+  "functions": {
+    "api/videos.js": {
+      "runtime": "@vercel/node"
+    }
+  }
 }
