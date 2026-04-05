@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/videos.js": {
-      "runtime": "@vercel/node"
-    }
-  }
-}
